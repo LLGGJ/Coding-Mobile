@@ -1,0 +1,146 @@
+#ai-coding-agents {
+	padding: 0.75rem;
+	overflow-y: auto;
+	height: 100%;
+	box-sizing: border-box;
+
+	.ai-agents-env-banner {
+		background: color-mix(in srgb, var(--warning-color, #ff9800) 15%, transparent);
+		border: 1px solid var(--warning-color, #ff9800);
+		border-radius: 8px;
+		padding: 0.6rem 0.8rem;
+		margin-bottom: 0.75rem;
+		font-size: 0.85rem;
+
+		&.hidden {
+			display: none;
+		}
+	}
+
+	.ai-agents-project-banner {
+		border-radius: 8px;
+		padding: 0.5rem 0.8rem;
+		margin-bottom: 0.9rem;
+		font-size: 0.85rem;
+		background: var(--secondary-color, #2a2d3a);
+		color: var(--secondary-text-color, #cfd3dc);
+
+		&.ok {
+			border-left: 3px solid var(--active-color, #7c4dff);
+		}
+	}
+
+	.ai-agents-disclaimer {
+		font-size: 0.72rem;
+		opacity: 0.65;
+		margin-top: 1rem;
+		line-height: 1.4;
+	}
+}
+
+.ai-agents-list {
+	display: flex;
+	flex-direction: column;
+	gap: 0.6rem;
+}
+
+.ai-agent-card {
+	border: 1px solid var(--border-color, #33364a);
+	border-radius: 10px;
+	padding: 0.7rem 0.85rem;
+	background: var(--secondary-color, #20222e);
+}
+
+.ai-agent-head {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin-bottom: 0.3rem;
+}
+
+.ai-agent-name {
+	font-weight: 600;
+	flex: 1;
+}
+
+.ai-agent-status-text {
+	font-size: 0.75rem;
+	opacity: 0.8;
+}
+
+.ai-agent-status {
+	width: 0.6rem;
+	height: 0.6rem;
+	border-radius: 50%;
+	flex-shrink: 0;
+	background: #777;
+
+	&.installed {
+		background: #3ddc84;
+	}
+	&.not-installed {
+		background: #777;
+	}
+	&.checking {
+		background: #7c4dff;
+		animation: ai-agent-pulse 1s infinite ease-in-out;
+	}
+	&.error {
+		background: #ff5252;
+	}
+	&.unknown {
+		background: #555;
+	}
+}
+
+@keyframes ai-agent-pulse {
+	0%,
+	100% {
+		opacity: 0.4;
+	}
+	50% {
+		opacity: 1;
+	}
+}
+
+.ai-agent-details {
+	font-size: 0.78rem;
+	opacity: 0.85;
+	margin-bottom: 0.4rem;
+}
+
+.ai-agent-detail-line {
+	word-break: break-all;
+}
+
+.ai-agent-notes {
+	font-size: 0.75rem;
+	opacity: 0.65;
+	margin: 0.2rem 0 0.6rem;
+	line-height: 1.35;
+}
+
+.ai-agent-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+}
+
+.ai-agent-action {
+	border: 1px solid var(--border-color, #33364a);
+	background: transparent;
+	color: inherit;
+	border-radius: 6px;
+	padding: 0.35rem 0.7rem;
+	font-size: 0.78rem;
+
+	&.primary {
+		background: var(--active-color, #7c4dff);
+		border-color: var(--active-color, #7c4dff);
+		color: #fff;
+	}
+
+	&:disabled {
+		opacity: 0.4;
+	}
+}

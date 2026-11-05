@@ -1,0 +1,44 @@
+#toast {
+  position: fixed;
+  bottom: 10px;
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  // Follow the theme's popup surface so toasts match menus and dialogs
+  background-color: rgba(9, 14, 29, 0.9);
+  background-color: var(--popup-background-color);
+  border: 1px solid var(--border-color, rgba(122, 122, 122, 0.2));
+  box-shadow: 0 4px 16px var(--box-shadow-color, rgba(0, 0, 0, 0.3));
+  color: white;
+  color: var(--popup-text-color);
+  font-size: 0.95rem;
+  font-weight: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-height: 50vh;
+  max-width: 80vw;
+  width: fit-content;
+  overflow: auto;
+  z-index: 9999;
+  border-radius: 8px;
+  pointer-events: none;
+  will-change: transform, opacity;
+
+  &[clickable='true'] {
+    pointer-events: all;
+  }
+
+  .message {
+    padding: 10px 14px;
+  }
+
+  .icon {
+    background-color: inherit;
+    color: inherit;
+    border: none;
+    min-height: 30px;
+    min-width: 30px;
+  }
+}

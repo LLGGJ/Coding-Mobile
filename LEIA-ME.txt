@@ -1,0 +1,91 @@
+ACODE DEVELOPER EDITION — LEIA-ME
+===================================
+
+Este é um fork do Acode (https://github.com/Acode-Foundation/Acode) com uma
+camada "Developer Edition" para desenvolvimento direto no Android. Nada da
+arquitetura original foi removido ou substituído: o editor continua sendo o
+CodeMirror 6 do Acode, a estrutura de pastas é a mesma, e os recursos
+originais (explorador de arquivos, terminal Alpine, S/FTP, plugins da
+comunidade etc.) continuam funcionando como antes.
+
+O QUE FOI ADICIONADO
+---------------------
+
+1. Contexto de projeto único (ACODE_PROJECT_ROOT)
+   O Acode já permitia abrir várias pastas ao mesmo tempo, mas não tinha o
+   conceito de "projeto atualmente ativo". Agora existe: a última pasta
+   aberta vira o projeto ativo automaticamente, e você pode escolher outra
+   pelo menu de contexto da pasta ("⋮" → "Set as active project"). O
+   terminal e o painel de agentes de IA usam esse projeto ativo.
+
+2. Terminal
+   Novas sessões de terminal já abrem dentro do projeto ativo (pode ser
+   desligado em Configurações → Developer Edition). Nada no comportamento
+   original do terminal Alpine (Node.js, npm, Git, Bash, ARM64) foi alterado
+   — só foi adicionado um "cd" automático no início.
+
+3. AI Coding Agents (Configurações → Developer Edition → AI Coding Agents)
+   Painel que detecta de verdade (rodando comandos reais dentro do Alpine,
+   nunca simulando) se Claude Code, OpenAI Codex CLI e OpenCode CLI estão
+   instalados, mostra a versão encontrada e abre cada um no projeto ativo.
+   A autenticação de cada ferramenta continua sendo feita pelo fluxo oficial
+   dela mesma, dentro do terminal — este painel não lê, não guarda e não
+   imprime tokens ou chaves de API.
+
+4. Tema "Developer Edition"
+   Tema escuro (preto/grafite, destaques em azul e roxo) disponível em
+   Configurações → Tema.
+
+5. Build automático pelo GitHub Actions
+   O APK é compilado pelo GitHub Actions, não no celular nem neste ambiente
+   de desenvolvimento assistido. Veja "COMO GERAR O APK" abaixo.
+
+COMO GERAR O APK
+------------------
+
+1. Envie este código para um repositório no GitHub (ou já é o seu fork).
+2. Crie e envie uma tag come[cc]ando com "developer-edition-":
+
+     git tag developer-edition-1
+     git push origin developer-edition-1
+
+   Isso dispara automaticamente o workflow
+   ".github/workflows/android-build.yml". Você também pode disparar
+   manualmente pela aba "Actions" do GitHub (botão "Run workflow").
+
+3. Quando o workflow terminar, o APK de debug fica disponível como
+   "Artifact" na própria página da execução, em Actions → (sua execução) →
+   Artifacts.
+
+4. O build de release assinado é opcional e separado: só roda se você
+   configurar os secrets KEYSTORE_CONTENT, KEYSTORE_PASSWORD e
+   BUILD_JSON_CONTENT e a variável de repositório ENABLE_SIGNED_RELEASE=true
+   (Settings → Secrets and variables → Actions, no GitHub).
+
+LIMITAÇÕES CONHECIDAS
+------------------------
+
+- Projetos abertos por uma URI SAF que não pertence ao Acode nem ao Termux
+  (por exemplo, uma pasta escolhida em armazenamento removível via seletor
+  do sistema) não têm uma ponte automática para o terminal ainda — o app
+  avisa isso em vez de fingir que o caminho funciona.
+- A sincronização do explorador de arquivos após um agente de IA alterar
+  arquivos fora do Acode ainda é manual (use "Refresh" na pasta).
+- Autocomplete/LSP completo hoje cobre JavaScript/TypeScript, HTML, CSS,
+  JSON e Tailwind. Python e C/C++ têm suporte parcial (precisam instalar o
+  servidor de linguagem no Alpine). PHP, Java e Kotlin têm apenas realce de
+  sintaxe, sem LSP. Veja a tabela completa em
+  docs/DEVELOPER_EDITION.md (Fase 5).
+- Nada neste fork foi validado em um dispositivo Android físico durante o
+  desenvolvimento assistido — toda a lógica de UI/terminal/Cordova foi
+  revisada por leitura de código, não por execução. O relatório completo,
+  fase a fase, com o que foi testado automaticamente e o que ainda depende
+  de teste manual em aparelho, está em docs/DEVELOPER_EDITION.md.
+
+DOCUMENTAÇÃO COMPLETA
+------------------------
+
+Veja docs/DEVELOPER_EDITION.md para o diagnóstico técnico completo (Fase 1),
+a lista de arquivos modificados por fase, o que foi testado, o que não foi
+testado e as pendências — exatamente como pedido no brief original do
+projeto.

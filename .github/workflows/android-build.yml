@@ -1,0 +1,234 @@
+# Acode Developer Edition - Android build
+#
+# Builds the debug APK on GitHub Actions, as required by the project brief
+# (section 8): the APK is never built inside this editing session, only here.
+#
+# The steps below intentionally mirror the proven steps already used by this
+# repository's own `.github/workflows/nightly-build.yml` (Java 21 temurin,
+# Node LTS, `npm install` + `npm install -g cordova` + `npm run setup`,
+# `node utils/storage_manager.mjs y`, `npm run build <variant> dev apk`) -
+# nothing here was invented; see docs/DEVELOPER_EDITION.md for how this was
+# verified against the real repository scripts (utils/scripts/build.sh,
+# package.json, config.xml).
+#
+# Trigger: push a tag matching `developer-edition-*` (see README for the
+# exact command), or run manually from the Actions tab.
+
+name: Developer Edition - Android build
+
+on:
+  push:
+    tags:
+      - "developer-edition-*"
+  workflow_dispatch:
+    inputs:
+      variant:
+        description: "App variant to build"
+        required: false
+        default: "paid"
+        type: choice
+        options:
+          - paid
+          - free
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # paid is the default, matching this repository's own nightly build.
+  # The free variant needs its admob bundle built first (npm run
+  # build:admob) - see the "Build admob bundle (free variant only)" step.
+  VARIANT: ${{ github.event_name == 'workflow_dispatch' && inputs.variant || 'paid' }}
+
+jobs:
+  debug-build:
+    name: Build debug APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      # Real, pinned-to-known-working versions, same as this repo's own
+      # workflows (.github/workflows/nightly-build.yml, ci.yml) and the dev
+      # container (.devcontainer/Dockerfile): Java 21 (temurin) + Node LTS.
+      - name: Setup Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "lts/*"
+          cache: npm
+          cache-dependency-path: "**/package-lock.json"
+
+      - name: Install JS dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Install Cordova CLI
+        run: npm install -g cordova
+
+      - name: Project setup (cordova platform + plugins)
+        run: npm run setup
+
+      - name: Build admob bundle (free variant only)
+        if: env.VARIANT == 'free'
+        run: npm run build:admob
+
+      # Answers "y" to the MANAGE_EXTERNAL_STORAGE permission prompt added
+      # by utils/storage_manager.mjs, matching what the project's own CI
+      # does for its builds. Documented in docs/DEVELOPER_EDITION.md.
+      - name: Grant broad storage permission (for the terminal/file bridge)
+        run: node utils/storage_manager.mjs y
+
+      - name: Compute build metadata
+        id: meta
+        run: |
+          GIT_COMMIT="$(git rev-parse --short=7 HEAD)"
+          echo "git_commit=$GIT_COMMIT" >> "$GITHUB_OUTPUT"
+          echo "artifact_name=acode-developer-edition-debug-${VARIANT}-$GIT_COMMIT" >> "$GITHUB_OUTPUT"
+
+      # Optional: if the upstream signing secrets are configured on this
+      # repository (same two secrets nightly-build.yml expects), reuse them
+      # so the debug build matches upstream's admob/package configuration.
+      # They are NOT required - the debug APK builds without them, since
+      # build.json is only consumed (optionally) by Cordova's hooks for
+      # release signing, not for a debug build. This keeps the signed
+      # release path strictly separate and optional, per the brief.
+      - name: Inject optional build.json (if configured)
+        if: ${{ env.HAS_BUILD_JSON == 'true' }}
+        env:
+          HAS_BUILD_JSON: ${{ secrets.BUILD_JSON_CONTENT != '' }}
+        run: echo "${{ secrets.BUILD_JSON_CONTENT }}" | base64 -d > build.json
+
+      - name: Build debug APK (${{ env.VARIANT }})
+        run: npm run build ${{ env.VARIANT }} dev apk
+
+      - name: Locate built APK
+        id: apk
+        run: |
+          APK_PATH="platforms/android/app/build/outputs/apk/debug/app-debug.apk"
+          if [ ! -f "$APK_PATH" ]; then
+            echo "::error title=APK not found::Expected debug APK at $APK_PATH but it does not exist. Check the 'Build debug APK' step's log above."
+            exit 1
+          fi
+          RENAMED="/tmp/${{ steps.meta.outputs.artifact_name }}.apk"
+          mv "$APK_PATH" "$RENAMED"
+          echo "path=$RENAMED" >> "$GITHUB_OUTPUT"
+          echo "sha256=$(sha256sum "$RENAMED" | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.meta.outputs.artifact_name }}
+          path: ${{ steps.apk.outputs.path }}
+          if-no-files-found: error
+
+      - name: Build summary
+        if: always()
+        run: |
+          echo "## Acode Developer Edition - debug build" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Key | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| --- | ----- |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Variant | ${{ env.VARIANT }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Commit | ${{ steps.meta.outputs.git_commit || 'n/a' }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Artifact | ${{ steps.meta.outputs.artifact_name || 'build failed before packaging' }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| SHA256 | ${{ steps.apk.outputs.sha256 || 'n/a' }} |" >> "$GITHUB_STEP_SUMMARY"
+
+  # Signed release build: strictly opt-in and separate from the debug job
+  # above, as required by section 8 of the brief ("O build de release
+  # assinado deve ser opcional e configurado separadamente"). It only runs
+  # when both signing secrets are present, and never on a plain debug tag.
+  signed-release-build:
+    name: Build signed release APK (optional)
+    needs: debug-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    if: ${{ vars.ENABLE_SIGNED_RELEASE == 'true' }}
+
+    steps:
+      - name: Validate required secrets
+        env:
+          KEYSTORE_CONTENT: ${{ secrets.KEYSTORE_CONTENT }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          BUILD_JSON_CONTENT: ${{ secrets.BUILD_JSON_CONTENT }}
+        run: |
+          [ -n "$KEYSTORE_CONTENT" ] && [ -n "$KEYSTORE_PASSWORD" ] && [ -n "$BUILD_JSON_CONTENT" ] || {
+            echo "::error title=Missing secrets::KEYSTORE_CONTENT, KEYSTORE_PASSWORD or BUILD_JSON_CONTENT is missing. Set the repository variable ENABLE_SIGNED_RELEASE=true only once these secrets exist.";
+            exit 1;
+          }
+
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Setup Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "lts/*"
+          cache: npm
+          cache-dependency-path: "**/package-lock.json"
+
+      - name: Install JS dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Install Cordova CLI
+        run: npm install -g cordova
+
+      - name: Project setup (cordova platform + plugins)
+        run: npm run setup
+
+      - name: Grant broad storage permission
+        run: node utils/storage_manager.mjs y
+
+      - name: Inject signing files
+        run: |
+          echo "${{ secrets.KEYSTORE_CONTENT }}" | base64 -d > /tmp/release.keystore
+          echo "${{ secrets.BUILD_JSON_CONTENT }}" | base64 -d > build.json
+
+      - name: Build release APK (${{ env.VARIANT }})
+        env:
+          VARIANT: ${{ env.VARIANT }}
+        run: npm run build ${{ env.VARIANT }} prod apk
+
+      - name: Locate and upload release APK
+        run: |
+          APK_PATH="platforms/android/app/build/outputs/apk/release"
+          if [ ! -d "$APK_PATH" ]; then
+            echo "::error title=Release APK not found::Expected directory $APK_PATH. Check the 'Build release APK' step's log above."
+            exit 1
+          fi
+          echo "Release APK(s):"
+          find "$APK_PATH" -name "*.apk"
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: acode-developer-edition-release-${{ github.sha }}
+          path: platforms/android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+
+      - name: Cleanup signing files
+        if: always()
+        run: rm -f /tmp/release.keystore build.json
