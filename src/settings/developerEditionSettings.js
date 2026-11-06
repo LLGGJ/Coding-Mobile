@@ -1,8 +1,8 @@
 import settingsPage from "components/settingsPage";
 import toast from "components/toast";
-import AiCodingAgents from "pages/aiCodingAgents";
 import projectContext from "lib/projectContext";
 import appSettings from "lib/settings";
+import AiCodingAgents from "pages/aiCodingAgents";
 
 const text = (key, fallback) => strings?.[key] || fallback;
 

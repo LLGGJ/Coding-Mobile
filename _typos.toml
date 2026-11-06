@@ -6,6 +6,8 @@ extend-exclude = [
     "node_modules",
     "codemirror-lsp-client",
     "www",
+    "LEIA-ME.txt",
+    "docs/DEVELOPER_EDITION.md",
     "*.yaml",
     ".vscode",
     "fastlane",

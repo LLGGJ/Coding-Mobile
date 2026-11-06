@@ -171,7 +171,12 @@ const projectContext = {
 	getTerminalAccessibility() {
 		const project = this.getActiveProject();
 		if (!project) {
-			return { project: null, accessible: false, prootPath: null, reason: "no-project" };
+			return {
+				project: null,
+				accessible: false,
+				prootPath: null,
+				reason: "no-project",
+			};
 		}
 		const result = getTerminalAccessibility(project.url);
 		return { project, ...result };

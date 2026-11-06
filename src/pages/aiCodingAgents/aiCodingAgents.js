@@ -20,11 +20,10 @@ const AGENT_DEFINITIONS = [
 		name: "Claude Code",
 		defaultBin: "claude",
 		homepage: "https://github.com/anthropics/claude-code",
-		notes:
-			text(
-				"ai-agent-notes-claude-code",
-				"Auth runs through Claude Code's own `claude /login` flow inside the terminal - this panel never touches its credentials.",
-			),
+		notes: text(
+			"ai-agent-notes-claude-code",
+			"Auth runs through Claude Code's own `claude /login` flow inside the terminal - this panel never touches its credentials.",
+		),
 	},
 	{
 		id: "codex",
@@ -118,7 +117,12 @@ async function detectAgent(bin) {
 		)?.trim();
 
 		if (!whichResult) {
-			return { status: STATUS.NOT_INSTALLED, path: null, version: null, error: null };
+			return {
+				status: STATUS.NOT_INSTALLED,
+				path: null,
+				version: null,
+				error: null,
+			};
 		}
 
 		let version = null;
@@ -135,7 +139,12 @@ async function detectAgent(bin) {
 			version = null;
 		}
 
-		return { status: STATUS.INSTALLED, path: whichResult, version, error: null };
+		return {
+			status: STATUS.INSTALLED,
+			path: whichResult,
+			version,
+			error: null,
+		};
 	} catch (error) {
 		return {
 			status: STATUS.ERROR,
@@ -346,7 +355,12 @@ export default function AiCodingAgents() {
 		}
 		renderEnvBanner(envState);
 
-		agentState.set(agent.id, { status: STATUS.CHECKING, path: null, version: null, error: null });
+		agentState.set(agent.id, {
+			status: STATUS.CHECKING,
+			path: null,
+			version: null,
+			error: null,
+		});
 		$card._update();
 
 		const bin = getCustomBin(agent.id) || agent.defaultBin;
