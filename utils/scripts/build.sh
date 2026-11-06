@@ -6,6 +6,15 @@ fdroidFlag=""
 packageType="apk"  # New default: apk or aar
 webpackmode="development"
 cordovamode=""
+# Acode Developer Edition: optional, off by default (see "jsoptimize" case
+# below) - lets a "dev" (debug-signed, no secrets required) build still get
+# the "prod" webpack/babel optimization pass (minified JS bundle). Debug
+# builds normally skip this, which is part of why the app's own loading
+# screen can feel noticeably slower on a debug APK than on a Play Store
+# build - a much bigger, unminified JS bundle for the WebView to parse and
+# run on startup. Does NOT touch cordovamode, so the package stays debug
+# (installable without a keystore secret) - only the JS output changes.
+jsOptimizeFlag=""
 
 # Check all arguments for specific values
 for arg in "$@"; do
@@ -21,6 +30,9 @@ for arg in "$@"; do
             ;;
         "apk"|"bundle")
             packageType="$arg"
+            ;;
+        "jsoptimize")
+            jsOptimizeFlag="true"
             ;;
         *)
             echo "Warning: Unknown argument '$arg' ignored"
@@ -77,6 +89,16 @@ webpackmode="production"
 cordovamode="--release"
 fi
 
+# configMode drives only utils/config.js (which just toggles .babelrc's
+# "compact" minification flag - see utils/config.js). jsOptimizeFlag upgrades
+# it to "p" without touching cordovamode above, so the Cordova package stays
+# whatever $mode already selected (debug, no signing secret needed).
+configMode="$mode"
+if [ "$jsOptimizeFlag" = "true" ] && [ "$mode" != "p" ]; then
+    webpackmode="production"
+    configMode="p"
+fi
+
 # Set build target based on packageType
 if [ "$packageType" = "bundle" ]; then
     echo "Building AAR library file..."
@@ -87,7 +109,7 @@ fi
 RED=''
 NC=''
 
-script1="node ./utils/config.js $mode $app"
+script1="node ./utils/config.js $configMode $app"
 script2="rspack --mode $webpackmode"
 # script3="node ./utils/loadStyles.js"
 

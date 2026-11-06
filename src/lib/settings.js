@@ -1,12 +1,10 @@
 import fsOperation from "fileSystem";
 import ThemeBuilder from "theme/builder";
 import themes from "theme/list";
-import { getSystemEditorTheme } from "theme/preInstalled";
 import helpers from "utils/helpers";
 import Url from "utils/Url";
 import config from "./config";
 import lang from "./lang";
-import { isDeviceDarkTheme } from "./systemConfiguration";
 
 /**
  * @typedef {object} fileBrowserSettings
@@ -235,10 +233,16 @@ class Settings {
 		if (this.#initialized) return;
 		this.settingsFile = Url.join(DATA_STORAGE, "settings.json");
 
-		this.#defaultSettings.appTheme = "system";
-		this.#defaultSettings.editorTheme = getSystemEditorTheme(
-			isDeviceDarkTheme(),
-		);
+		// Acode Developer Edition: default a fresh install to the dark
+		// "Developer Edition" identity instead of following the OS theme, so
+		// first launch never opens in a white/light UI on a light-mode phone
+		// (see project brief, "nobody likes the white terminal/UI"). This
+		// only affects users who have never saved settings.json yet -
+		// anyone with an existing settings.json keeps whatever they already
+		// chose, "system" included, since this path is skipped below once
+		// the file exists.
+		this.#defaultSettings.appTheme = "developer edition";
+		this.#defaultSettings.editorTheme = "tokyoNight";
 
 		this.#initialized = true;
 

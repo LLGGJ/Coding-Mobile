@@ -60,6 +60,22 @@ jobs:
           fetch-depth: 0
           submodules: recursive
 
+      # Without this, the Android Gradle Plugin auto-generates a brand new
+      # ~/.android/debug.keystore (with a new random key) on every single
+      # CI run, since GitHub Actions runners start clean. Every build then
+      # has a DIFFERENT debug signature, so installing an update over a
+      # previous debug build fails with "package conflicts with an
+      # existing package" (reported in the Developer Edition brief). This
+      # repo's own .github/ci/debug.keystore (committed on purpose - it is
+      # a debug-only key with the standard, publicly known Android debug
+      # password "android"/alias "androiddebugkey", never used for the
+      # signed-release job below) is installed at the default location so
+      # every build - today and in the future - signs with the same key.
+      - name: Install stable debug keystore
+        run: |
+          mkdir -p "$HOME/.android"
+          cp .github/ci/debug.keystore "$HOME/.android/debug.keystore"
+
       # Real, pinned-to-known-working versions, same as this repo's own
       # workflows (.github/workflows/nightly-build.yml, ci.yml) and the dev
       # container (.devcontainer/Dockerfile): Java 21 (temurin) + Node LTS.
@@ -116,8 +132,14 @@ jobs:
           HAS_BUILD_JSON: ${{ secrets.BUILD_JSON_CONTENT != '' }}
         run: echo "${{ secrets.BUILD_JSON_CONTENT }}" | base64 -d > build.json
 
+      # "jsoptimize" runs the production webpack/babel pass (minified JS)
+      # while still packaging a debug (unsigned-by-Google, our stable debug
+      # key) APK - no release secrets needed. See utils/scripts/build.sh.
+      # This is the loading-screen performance fix from the brief: a debug
+      # build's much bigger, unminified JS bundle is slower for the WebView
+      # to parse/run on startup than the optimized one Play Store builds get.
       - name: Build debug APK (${{ env.VARIANT }})
-        run: npm run build ${{ env.VARIANT }} dev apk
+        run: npm run build ${{ env.VARIANT }} dev apk jsoptimize
 
       - name: Locate built APK
         id: apk
