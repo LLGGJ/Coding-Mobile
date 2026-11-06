@@ -11,13 +11,16 @@
 # verified against the real repository scripts (utils/scripts/build.sh,
 # package.json, config.xml).
 #
-# Trigger: push a tag matching `developer-edition-*` (see README for the
-# exact command), or run manually from the Actions tab.
+# Trigger: automatically on every push to `main`, on a push of a tag
+# matching `developer-edition-*` (kept for anyone who prefers tagging a
+# specific commit), or run manually from the Actions tab.
 
 name: Developer Edition - Android build
 
 on:
   push:
+    branches:
+      - main
     tags:
       - "developer-edition-*"
   workflow_dispatch:
