@@ -553,7 +553,11 @@ custom.autoDarkened = true;
 // purple accents (see section 7 of the Developer Edition brief). Built the
 // same way as every other built-in theme above, so it works everywhere a
 // theme already works instead of bolting on a parallel styling system.
-const developerEdition = createBuiltInTheme("Developer Edition", "dark", "free");
+const developerEdition = createBuiltInTheme(
+	"Developer Edition",
+	"dark",
+	"free",
+);
 developerEdition.darkenedPrimaryColor = "rgb(10, 10, 14)";
 developerEdition.primaryColor = "rgb(16, 17, 23)";
 developerEdition.primaryTextColor = "rgb(232, 233, 240)";

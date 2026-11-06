@@ -74,7 +74,9 @@ describe("projectContext", () => {
 	it("notifies subscribers on change and stops after unsubscribing", async () => {
 		const projectContext = await freshModule();
 		const seen = [];
-		const unsubscribe = projectContext.onChange((project) => seen.push(project));
+		const unsubscribe = projectContext.onChange((project) =>
+			seen.push(project),
+		);
 
 		projectContext.setActiveProject({ url: "file:///a", name: "a" });
 		unsubscribe();
@@ -90,7 +92,9 @@ describe("projectContext", () => {
 		projectContext.registerOpenChecker((url) => url === "file:///still-open");
 
 		expect(projectContext.getActiveProject({ requireOpen: true })).toBeNull();
-		expect(projectContext.getActiveProject({ requireOpen: false })).not.toBeNull();
+		expect(
+			projectContext.getActiveProject({ requireOpen: false }),
+		).not.toBeNull();
 	});
 
 	it("resolves terminal accessibility for a path inside the app's public dir", async () => {

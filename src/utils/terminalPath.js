@@ -147,7 +147,8 @@ export function convertToProotPath(url = "") {
  * }}
  */
 export function getTerminalAccessibility(url = "") {
-	if (!url) return { accessible: false, prootPath: null, reason: "unknown-scheme" };
+	if (!url)
+		return { accessible: false, prootPath: null, reason: "unknown-scheme" };
 
 	if (isTerminalAccessiblePath(url)) {
 		const prootPath = convertToProotPath(url);

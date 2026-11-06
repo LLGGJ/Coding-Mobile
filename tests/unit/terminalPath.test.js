@@ -1,10 +1,10 @@
-import { describe, expect, it, beforeEach } from "vitest";
 import {
 	convertToProotPath,
 	getTerminalAccessibility,
 	isTerminalAccessiblePath,
 	isTerminalSafUri,
 } from "utils/terminalPath";
+import { beforeEach, describe, expect, it } from "vitest";
 
 beforeEach(() => {
 	delete window.BuildInfo;
@@ -20,9 +20,9 @@ describe("terminalPath", () => {
 		expect(
 			isTerminalAccessiblePath(`file://${DATA_DIR}/files/public/my-project`),
 		).toBe(true);
-		expect(isTerminalAccessiblePath(`file:///storage/emulated/0/Download`)).toBe(
-			false,
-		);
+		expect(
+			isTerminalAccessiblePath(`file:///storage/emulated/0/Download`),
+		).toBe(false);
 	});
 
 	it("converts a public-dir file:// url into its /public proot path", () => {
@@ -32,13 +32,15 @@ describe("terminalPath", () => {
 	});
 
 	it("converts an alpine-root file:// url into its rootfs-relative proot path", () => {
-		expect(
-			convertToProotPath(`file://${DATA_DIR}/files/alpine/root/foo`),
-		).toBe("/root/foo");
+		expect(convertToProotPath(`file://${DATA_DIR}/files/alpine/root/foo`)).toBe(
+			"/root/foo",
+		);
 	});
 
 	it("returns null instead of guessing a path it does not recognize", () => {
-		expect(convertToProotPath("file:///storage/emulated/0/Download")).toBeNull();
+		expect(
+			convertToProotPath("file:///storage/emulated/0/Download"),
+		).toBeNull();
 	});
 
 	it("getTerminalAccessibility flags an unbridged SAF tree instead of faking a path", () => {
