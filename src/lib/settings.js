@@ -252,7 +252,13 @@ class Settings {
 			await this.#save();
 			this.value = structuredClone(this.#defaultSettings);
 			this.#oldSettings = structuredClone(this.#defaultSettings);
-			this.value.lang = navigator.language || "en-us";
+			// Código Mobile defaults to Portuguese on a fresh install instead
+			// of following the device's system language - relying on
+			// navigator.language here was inconsistent (some WebViews don't
+			// report it the way the user's device is actually set). Anyone
+			// who changes it in Settings keeps their choice, same as the
+			// theme defaults above - this only affects a brand-new install.
+			this.value.lang = "pt-br";
 			return;
 		}
 

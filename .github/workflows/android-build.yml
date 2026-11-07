@@ -60,6 +60,59 @@ jobs:
           fetch-depth: 0
           submodules: recursive
 
+      # The three bundled Alpine rootfs images (src/plugins/proot/assets/
+      # alpine_assets/{arm32,arm64,x64}/alpine.rootfs) ship WITHOUT nodejs/
+      # npm, same as upstream's plain Alpine minirootfs - so the terminal's
+      # own `apk add npm` (first run, or the auto-install feature) always
+      # has to download it before a project's `npm install` can start.
+      # This installs nodejs+npm into each rootfs here in CI, before it's
+      # packaged into the APK, so a fresh terminal already has npm, no
+      # download needed. arm32/arm64 aren't this runner's own architecture
+      # (x86_64), so QEMU user-mode emulation (registered via binfmt_misc)
+      # is what lets a plain `chroot` into those rootfs run their own ARM
+      # apk binary transparently.
+      - name: Set up QEMU (for arm32/arm64 Alpine rootfs chroot)
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: all
+
+      - name: Bundle npm into the Alpine rootfs images
+        run: |
+          set -euo pipefail
+          for arch_dir in arm32 arm64 x64; do
+            rootfs_path="src/plugins/proot/assets/alpine_assets/${arch_dir}/alpine.rootfs"
+            extract_dir="/tmp/alpine-bundle-${arch_dir}"
+            echo "::group::${arch_dir}: extracting ${rootfs_path}"
+            rm -rf "$extract_dir"
+            mkdir -p "$extract_dir"
+            sudo tar -xzf "$rootfs_path" -C "$extract_dir"
+            echo "::endgroup::"
+
+            sudo cp /etc/resolv.conf "$extract_dir/etc/resolv.conf"
+            sudo mount -t proc proc "$extract_dir/proc"
+            sudo mount --bind /dev "$extract_dir/dev"
+            sudo mount --bind /dev/pts "$extract_dir/dev/pts" 2>/dev/null || true
+
+            echo "::group::${arch_dir}: apk add nodejs npm"
+            sudo chroot "$extract_dir" /sbin/apk update
+            sudo chroot "$extract_dir" /sbin/apk add --no-cache nodejs npm
+            sudo chroot "$extract_dir" /usr/bin/node --version
+            sudo chroot "$extract_dir" /usr/bin/npm --version
+            echo "::endgroup::"
+
+            sudo umount "$extract_dir/dev/pts" 2>/dev/null || true
+            sudo umount "$extract_dir/dev"
+            sudo umount "$extract_dir/proc"
+            sudo rm -rf "$extract_dir/var/cache/apk"/*
+
+            echo "::group::${arch_dir}: repacking ${rootfs_path}"
+            (cd "$extract_dir" && sudo tar --numeric-owner -czf "/tmp/${arch_dir}-alpine.rootfs" .)
+            sudo mv "/tmp/${arch_dir}-alpine.rootfs" "$rootfs_path"
+            sudo chown "$(id -u):$(id -g)" "$rootfs_path"
+            ls -la "$rootfs_path"
+            echo "::endgroup::"
+          done
+
       # Without this, the Android Gradle Plugin auto-generates a brand new
       # ~/.android/debug.keystore (with a new random key) on every single
       # CI run, since GitHub Actions runners start clean. Every build then
