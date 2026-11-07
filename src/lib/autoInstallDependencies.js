@@ -11,8 +11,8 @@
  * Off switch: Settings → Developer Edition →
  * "Install npm dependencies automatically" (on by default).
  */
-import toast from "components/toast";
 import fsOperation from "fileSystem";
+import toast from "components/toast";
 import appSettings from "lib/settings";
 import Url from "utils/Url";
 import projectContext from "./projectContext";

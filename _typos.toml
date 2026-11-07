@@ -62,3 +62,7 @@ sav = "sav"
 ist = "ist"
 Hel = "Hel"
 edn = "edn"
+# Portuguese words in readme.md/config.xml (Código Mobile branding), not
+# typos for the English words typos thinks they are.
+comando = "comando"
+leve = "leve"
