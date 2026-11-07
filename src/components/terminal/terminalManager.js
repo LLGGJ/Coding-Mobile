@@ -1275,14 +1275,15 @@ class TerminalManager {
 	convertProotPath(prootPath) {
 		if (!prootPath) return prootPath;
 
-		const packageName = window.BuildInfo?.packageName || "com.foxdebug.acode";
+		const packageName =
+			window.BuildInfo?.packageName || "com.codigomobile.editor";
 		const dataDir = `/data/user/0/${packageName}`;
 		const alpineRoot = `${dataDir}/files/alpine`;
 
 		let convertedPath;
 
 		if (prootPath.startsWith("/public")) {
-			// /public -> /data/user/0/com.foxdebug.acode/files/public
+			// /public -> /data/user/0/com.codigomobile.editor/files/public
 			convertedPath = `file://${dataDir}/files${prootPath}`;
 		} else if (
 			prootPath.startsWith("/sdcard") ||

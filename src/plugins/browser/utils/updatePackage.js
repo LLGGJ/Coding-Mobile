@@ -13,7 +13,7 @@ const docProvider = path.resolve(
 
 const repeatChar = (char, times) => char.repeat(times);
 
-function replaceImport(filePath, appName) {
+function replaceImport(filePath, applicationId) {
   if (!fs.existsSync(filePath)) {
     console.warn(`⚠ File not found: ${filePath}`);
     return;
@@ -21,9 +21,16 @@ function replaceImport(filePath, appName) {
 
   const data = fs.readFileSync(filePath, "utf8");
 
+  // Rewrites the app's generated R-class import to match whatever the
+  // actual applicationId (config.xml's widget id) is. This used to assume
+  // the id was always "com.foxdebug.acode" or "com.foxdebug.acodefree"
+  // (only the last segment ever changed), which broke once the id moved to
+  // a different top-level namespace - so this now matches ANY previously
+  // generated "import <id>.R;" line, not just the foxdebug ones, and
+  // replaces it with the current full id.
   const updated = data.replace(
-    /(import\s+com\.foxdebug\.)(acode|acodefree)(\.R;)/,
-    `$1${appName}$3`
+    /import\s+[0-9a-zA-Z.\-_]+\.R;/,
+    `import ${applicationId}.R;`
   );
 
   fs.writeFileSync(filePath, updated);
@@ -41,12 +48,12 @@ try {
     throw new Error("Could not extract widget id from config.xml");
   }
 
-  const appName = match[1].split(".").pop();
+  const applicationId = match[1];
 
-  replaceImport(docProvider, appName);
-  replaceImport(menuJava, appName);
+  replaceImport(docProvider, applicationId);
+  replaceImport(menuJava, applicationId);
 
-  const msg = `==== Changed package to com.foxdebug.${appName} ====`;
+  const msg = `==== Changed package to ${applicationId} ====`;
 
   console.log("\n" + repeatChar("=", msg.length));
   console.log(msg);

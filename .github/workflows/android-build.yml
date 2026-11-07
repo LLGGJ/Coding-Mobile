@@ -73,8 +73,12 @@ jobs:
       # every build - today and in the future - signs with the same key.
       - name: Install stable debug keystore
         run: |
+          echo "HOME=$HOME"
+          echo "user.home (java) should match HOME above"
           mkdir -p "$HOME/.android"
           cp .github/ci/debug.keystore "$HOME/.android/debug.keystore"
+          echo "Keystore installed at $HOME/.android/debug.keystore. Expected fingerprint:"
+          keytool -list -v -keystore .github/ci/debug.keystore -storepass android -alias androiddebugkey | grep "SHA256:"
 
       # Real, pinned-to-known-working versions, same as this repo's own
       # workflows (.github/workflows/nightly-build.yml, ci.yml) and the dev

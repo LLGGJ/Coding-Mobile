@@ -34,12 +34,12 @@ describe("projectContext", () => {
 	it("sets, persists and restores the active project", async () => {
 		const projectContext = await freshModule();
 		projectContext.setActiveProject({
-			url: "file:///data/user/0/com.foxdebug.acode/files/public/my-app",
+			url: "file:///data/user/0/com.codigomobile.editor/files/public/my-app",
 			name: "my-app",
 		});
 
 		expect(projectContext.getActiveProject()).toEqual({
-			url: "file:///data/user/0/com.foxdebug.acode/files/public/my-app",
+			url: "file:///data/user/0/com.codigomobile.editor/files/public/my-app",
 			name: "my-app",
 		});
 
@@ -48,7 +48,7 @@ describe("projectContext", () => {
 		// entre sessões, quando possível").
 		const reloaded = await freshModule();
 		expect(reloaded.getActiveProject()).toEqual({
-			url: "file:///data/user/0/com.foxdebug.acode/files/public/my-app",
+			url: "file:///data/user/0/com.codigomobile.editor/files/public/my-app",
 			name: "my-app",
 		});
 	});
@@ -100,13 +100,13 @@ describe("projectContext", () => {
 	it("resolves terminal accessibility for a path inside the app's public dir", async () => {
 		const projectContext = await freshModule();
 		projectContext.setActiveProject({
-			url: "file:///data/user/0/com.foxdebug.acode/files/public/my-app",
+			url: "file:///data/user/0/com.codigomobile.editor/files/public/my-app",
 			name: "my-app",
 		});
 
 		expect(projectContext.getTerminalAccessibility()).toEqual({
 			project: {
-				url: "file:///data/user/0/com.foxdebug.acode/files/public/my-app",
+				url: "file:///data/user/0/com.codigomobile.editor/files/public/my-app",
 				name: "my-app",
 			},
 			accessible: true,

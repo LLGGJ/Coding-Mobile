@@ -34,7 +34,7 @@ export const isTermuxSafUri = (value = "") =>
  * @param {string} value
  */
 export const isAcodeTerminalPublicSafUri = (value = "") =>
-	value.startsWith("content://com.foxdebug.acode.documents/tree/");
+	value.startsWith("content://com.codigomobile.editor.documents/tree/");
 
 /**
  * @param {string} value
@@ -51,7 +51,7 @@ export const isTerminalSafUri = (value = "") =>
 export function getTerminalPaths() {
 	const packageName =
 		(typeof window !== "undefined" && window.BuildInfo?.packageName) ||
-		"com.foxdebug.acode";
+		"com.codigomobile.editor";
 	const dataDir = `/data/user/0/${packageName}`;
 	const alpineRoot = `${dataDir}/files/alpine`;
 	const publicDir = `${dataDir}/files/public`;

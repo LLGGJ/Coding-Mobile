@@ -10,7 +10,7 @@ beforeEach(() => {
 	delete window.BuildInfo;
 });
 
-const DATA_DIR = "/data/user/0/com.foxdebug.acode";
+const DATA_DIR = "/data/user/0/com.codigomobile.editor";
 
 describe("terminalPath", () => {
 	it("recognizes paths under the app's alpine root and public dir as accessible", () => {
@@ -79,7 +79,7 @@ describe("terminalPath", () => {
 		).toBe(true);
 		expect(
 			isTerminalSafUri(
-				"content://com.foxdebug.acode.documents/tree/public%3Amy-project",
+				"content://com.codigomobile.editor.documents/tree/public%3Amy-project",
 			),
 		).toBe(true);
 		expect(

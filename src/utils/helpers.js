@@ -399,7 +399,7 @@ export default {
 		);
 		const isTermuxUri = currentUri.includes("com.termux.documents");
 		const isAcodeTerminalPublicSafUri = currentUri.includes(
-			"com.foxdebug.acode.documents",
+			"com.codigomobile.editor.documents",
 		);
 		const [, treeSegment = ""] = currentUri.split("/tree/");
 		const terminalBasePath = isAcodeTerminalPublicSafUri
