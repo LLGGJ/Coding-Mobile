@@ -25,6 +25,7 @@ import {
 } from "utils/terminalPath";
 import Uri from "utils/Uri";
 import Url from "utils/Url";
+import maybeAutoInstallDependencies from "./autoInstallDependencies";
 import config from "./config";
 import * as FileList from "./fileList";
 import { loadFileBrowser } from "./lazyImports";
@@ -168,6 +169,7 @@ function openFolder(_path, opts = {}) {
 	// project (ACODE_PROJECT_ROOT) unless the user later pins a different
 	// one explicitly via the root's "Set as active project" action.
 	projectContext.setActiveProject({ url: _path, name: title });
+	maybeAutoInstallDependencies({ url: _path, name: title });
 
 	editorManager.emit("update", "add-folder");
 	editorManager.onupdate("add-folder", event);

@@ -1,98 +1,78 @@
-# Acode - Code Editor for Android
+# Código Mobile
 
 <p align="center">
-  <img src='res/logo_1.png' width='250'>
+  <img src='www/logo.png' width='220'>
 </p>
 
-[![](https://img.shields.io/endpoint?logo=telegram&label=Acode&style=flat&url=https%3A%2F%2Facode.app%2Fapi%2Ftelegram-members-count)](https://t.me/foxdebug_acode) [![](https://dcbadge.limes.pink/api/server/https://discord.gg/vVxVWYUAWD?style=flat)](https://discord.gg/vVxVWYUAWD)
+## • Visão geral
 
-## • Overview
+**Código Mobile** é um editor de código e IDE para Android com terminal
+Linux (Alpine) integrado, contexto de projeto único compartilhado entre o
+explorador de arquivos e o terminal, e um painel de **Agentes de IA**
+(Claude Code, OpenAI Codex CLI, OpenCode) que detecta o que está
+realmente instalado no sandbox e abre direto no seu projeto.
 
-Welcome to Acode Editor - a powerful and versatile code editing tool designed specifically for Android devices. Whether you're working on HTML, CSS, JavaScript, or other programming languages, Acode empowers you to code on-the-go with confidence.
+## • Principais recursos
 
-## • Features
+- Edição de código com suporte a múltiplas linguagens (HTML, CSS,
+  JavaScript, Python, Java e mais).
+- Terminal Linux (Alpine) embutido, com contexto de projeto ativo
+  (`ACODE_PROJECT_ROOT`): abrir um terminal já entra na pasta do projeto
+  aberto no explorador de arquivos.
+- Painel **Agentes de IA** para detectar e abrir Claude Code, Codex CLI e
+  OpenCode no projeto ativo.
+- Integração S/FTP e SSH.
+- Console JavaScript embutido.
+- Suporte a plugins da comunidade.
+- Identidade visual escura por padrão.
 
-- Edit and create websites, and instantly preview them in a browser.
-- Seamlessly modify source files for various languages like Python, Java, JavaScript, and more.
-- Built-in javascript console
-- S/FTP and SSH terminal integration
-- Built-in terminal(Alpine)
-- Enjoy multi-language editing support with easy management tools.
-- Enjoy a large collections of community plugins to enhance your coding experience.
+## • Instalação
 
-## • Installation
+Este projeto não é distribuído pela Play Store ou F-Droid. O APK é gerado
+automaticamente pelo GitHub Actions a cada atualização do código: veja a
+aba **Actions** do repositório, abra a execução mais recente e baixe o
+artefato em "Artifacts".
 
-You can get Acode Editor from popular platforms:
-
-[<img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" alt="Get it on Google Play" height="60">](https://play.google.com/store/apps/details?id=com.foxdebug.acodefree) [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" alt="Get it on F-Droid" height="60"/>](https://www.f-droid.org/packages/com.foxdebug.acode/)
-
-## • Project Structure
+## • Estrutura do projeto
 
 <pre>
-Acode/
+.
 |
-|- src/   - Core code and language files
+|- src/   - Código-fonte e arquivos de idioma
 |
-|- www/   - Public documents, compiled files, and HTML templates
+|- www/   - Documentos públicos, arquivos compilados e templates HTML
 |
-|- utils/ - CLI tools for building, string manipulation, and more
+|- utils/ - Ferramentas de linha de comando para build e afins
 |
-|- codemirror-lsp-client/ - Git submodule providing @codemirror/lsp-client (clone with --recurse-submodules)
+|- codemirror-lsp-client/ - Submódulo git (clone com --recurse-submodules)
 </pre>
 
-## • Multi-language Support
+## • Suporte a múltiplos idiomas
 
-Enhance Acode's capabilities by adding new languages easily. Just create a file with the language code (e.g., en-us for English) in [`src/lang/`](https://github.com/Acode-Foundation/Acode/tree/main/src/lang) and include it in [`src/lib/lang.js`](https://github.com/Acode-Foundation/Acode/blob/main/src/lib/lang.js). Manage strings across languages effortlessly using utility commands:
+Para adicionar um novo idioma, crie um arquivo com o código do idioma
+(ex.: `en-us` para inglês) em [`src/lang/`](src/lang/) e inclua em
+[`src/lib/lang.js`](src/lib/lang.js). Há utilitários de linha de comando
+para gerenciar as strings:
 
 ```shell
-pnpm run lang add
-pnpm run lang remove
-pnpm run lang search
-pnpm run lang update
+npm run lang add
+npm run lang remove
+npm run lang search
+npm run lang update
 ```
 
-## • Acode Developer Edition
+## • Build e contribuição
 
-This fork adds a Developer Edition layer on top of the original Acode,
-focused on building directly on Android:
+Veja [CONTRIBUTING.md](CONTRIBUTING.md) para instruções detalhadas, e
+[docs/DEVELOPER_EDITION.md](docs/DEVELOPER_EDITION.md) para o relatório
+completo de implementação (o que foi feito, testado, não testado e
+pendente), e [LEIA-ME.txt](LEIA-ME.txt) para um resumo em português.
 
-- A single active-project context (`lib/projectContext.js`, the
-  `ACODE_PROJECT_ROOT` equivalent requested for this fork) shared by the
-  file explorer and the terminal.
-- The built-in Alpine terminal auto-`cd`s into the active project on new
-  sessions (toggle in **Settings → Developer Edition**).
-- An **AI Coding Agents** panel (Claude Code, OpenAI Codex CLI, OpenCode)
-  that detects what is actually installed in the Alpine sandbox and opens
-  it in the active project - nothing is simulated.
-- A **Developer Edition** dark theme (graphite/black, blue/purple accents).
-- A dedicated GitHub Actions workflow
-  (`.github/workflows/android-build.yml`) that builds the debug APK - see
-  [docs/DEVELOPER_EDITION.md](docs/DEVELOPER_EDITION.md) for the full
-  phase-by-phase report (what was implemented, tested, not tested, and
-  still pending), and [LEIA-ME.txt](LEIA-ME.txt) for a Portuguese summary.
+## • Créditos e licença
 
-## • Contributing & Building the Application
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed instructions.
-
-## • Contributors
-
-<a href="https://github.com/Acode-Foundation/Acode/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Acode-Foundation/Acode" />
-</a>
-
-## • Developing a Plugin for Acode
-
-For comprehensive documentation on creating plugins for Acode Editor, visit the [repository](https://github.com/Acode-Foundation/acode-plugin).
-
-For plugin development information, refer to: [Acode Plugin Documentation](https://docs.acode.app/)
-
-## Star History
-
-<a href="https://star-history.com/#Acode-Foundation/Acode&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Acode-Foundation/Acode&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Acode-Foundation/Acode&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Acode-Foundation/Acode&type=Date" />
- </picture>
-</a>
+Código Mobile é um fork do [Acode](https://github.com/Acode-Foundation/Acode)
+(© 2020 Foxdebug/Ajit Kumar), distribuído sob a **Licença MIT** - veja
+[LICENSE](LICENSE). A licença exige manter o aviso de copyright original
+nas cópias do software, por isso ele permanece no arquivo de licença; o
+restante do projeto (nome, identidade visual, textos e as mudanças
+descritas acima) é deste fork.

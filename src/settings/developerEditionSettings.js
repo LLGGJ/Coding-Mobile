@@ -19,11 +19,18 @@ export default function developerEditionSettings() {
 	const values = appSettings.value;
 
 	if (!values.developerEdition) {
-		values.developerEdition = { aiAgents: {}, autoCdToActiveProject: true };
+		values.developerEdition = {
+			aiAgents: {},
+			autoCdToActiveProject: true,
+			autoInstallDependencies: true,
+		};
 	}
 	const devValues = values.developerEdition;
 	if (devValues.autoCdToActiveProject === undefined) {
 		devValues.autoCdToActiveProject = true;
+	}
+	if (devValues.autoInstallDependencies === undefined) {
+		devValues.autoInstallDependencies = true;
 	}
 
 	const categories = {
@@ -52,6 +59,19 @@ export default function developerEditionSettings() {
 			info: text(
 				"info-auto-cd-to-active-project",
 				"New terminal sessions automatically change into the active project's folder when it is reachable by the terminal.",
+			),
+			category: categories.project,
+		},
+		{
+			key: "autoInstallDependencies",
+			text: text(
+				"auto install dependencies",
+				"Install npm dependencies automatically",
+			),
+			checkbox: devValues.autoInstallDependencies !== false,
+			info: text(
+				"info-auto-install-dependencies",
+				"When a folder with a package.json is opened, run npm install for it automatically in a new terminal (installs npm itself in Alpine first if needed).",
 			),
 			category: categories.project,
 		},

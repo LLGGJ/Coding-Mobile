@@ -154,50 +154,24 @@ export default function mainSettings() {
 			category: categories.maintenance,
 			chevron: true,
 		},
-		{
-			key: "about",
-			text: strings.about,
-			icon: "info",
-			info: `Version ${BuildInfo.version}`,
-			category: categories.aboutAcode,
-			chevron: true,
-		},
-		{
-			key: "sponsors",
-			text: strings.sponsor,
-			icon: "favorite",
-			info: strings["settings-info-main-sponsors"],
-			category: categories.aboutAcode,
-			chevron: true,
-		},
-		{
-			key: "changeLog",
-			text: `${strings["changelog"]}`,
-			icon: "update",
-			info: strings["settings-info-main-changelog"],
-			category: categories.aboutAcode,
-			chevron: true,
-		},
-		{
-			key: "rateapp",
-			text: strings["rate acode"],
-			icon: "star_outline",
-			info: strings["settings-info-main-rateapp"],
-			category: categories.aboutAcode,
-			chevron: true,
-		},
 	];
+	// Acode Developer Edition / Código Mobile: dropped the "About Acode"
+	// menu items (about/sponsors/changeLog/rateapp) and the "Discover more
+	// apps" promotions block below, per the brief - this fork isn't
+	// published as Acode and doesn't cross-promote the upstream project's
+	// other apps. The pages themselves (pages/about, pages/sponsors,
+	// pages/changelog) are untouched in case something else still opens
+	// them directly.
 
 	if (!config.HAS_PRO) {
-		const aboutIndex = items.findIndex((item) => item.key === "about");
-		items.splice(aboutIndex, 0, {
+		items.push({
 			key: "privacyChoices",
 			text: strings["privacy choices"] || "Privacy choices",
 			icon: "tune",
 			info:
 				strings["settings-info-main-privacy-choices"] ||
 				"Manage your advertising privacy choices.",
-			category: categories.aboutAcode,
+			category: categories.maintenance,
 			chevron: true,
 			hidden: true,
 		});
@@ -219,25 +193,6 @@ export default function mainSettings() {
 			info: `${strings["settings-info-main-remove-ads"]}${!helpers.shouldAllowExternalPurchase() ? ` ${strings["iap-pro-purchase-warning"]}` : ""}`,
 			category: categories.supportAcode,
 			chevron: true,
-		});
-	}
-
-	// Add promotion items from cached data
-	const cachedPromotions = helpers.parseJSON(
-		localStorage.getItem("cached_promotions"),
-	);
-	if (Array.isArray(cachedPromotions) && cachedPromotions.length) {
-		categories.promotions = strings["settings-category-discover-apps"];
-		cachedPromotions.forEach((promo) => {
-			if (!promo.url || !promo.label || !/^https?:\/\//.test(promo.url)) return;
-			items.push({
-				key: `promo-${encodeURIComponent(promo.url)}`,
-				text: promo.label,
-				image: typeof promo.icon === "string" ? promo.icon : null,
-				info: typeof promo.link_text === "string" ? promo.link_text : "",
-				link: promo.url,
-				category: categories.promotions,
-			});
 		});
 	}
 

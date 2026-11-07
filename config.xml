@@ -3,12 +3,13 @@
     xmlns="http://www.w3.org/ns/widgets"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:cdv="http://cordova.apache.org/ns/1.0">
-    <name>Acode</name>
+    <name>Código Mobile</name>
     <description>
-        Light weight code editor and web IDE for android.
+        Editor de código leve e IDE web para Android, com terminal Alpine
+        integrado e agentes de IA para codificação.
     </description>
-    <author email="ajit@foxdebug.com" href="https://foxdebug.com">
-        Foxdebug
+    <author>
+        Código Mobile
     </author>
     <content src="index.html" />
     <access launch-external="yes" origin="*" />

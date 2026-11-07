@@ -1,8 +1,8 @@
 {
   "name": "com.foxdebug.acode",
-  "displayName": "Acode",
+  "displayName": "Código Mobile",
   "version": "1.13.5",
-  "description": "Acode is a code editor for android",
+  "description": "Código Mobile is a mobile code editor for Android, based on Acode, with an integrated Alpine terminal and AI coding agents",
   "scripts": {
     "lang": "node ./utils/lang.js",
     "build": "sh utils/scripts/build.sh",
