@@ -241,8 +241,11 @@ class Settings {
 		// anyone with an existing settings.json keeps whatever they already
 		// chose, "system" included, since this path is skipped below once
 		// the file exists.
+		// Both the app theme and the editor syntax theme below match
+		// Visual Studio Code's own Dark+ look, matching Código Mobile's
+		// "look like VS Code" identity.
 		this.#defaultSettings.appTheme = "developer edition";
-		this.#defaultSettings.editorTheme = "tokyoNight";
+		this.#defaultSettings.editorTheme = "vscodeDark";
 
 		this.#initialized = true;
 

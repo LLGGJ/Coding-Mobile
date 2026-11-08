@@ -52,6 +52,11 @@ jobs:
     name: Build debug APK
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    # Needed only by this job's "Publish APK to a GitHub Release" step
+    # below, to create/update a release and upload the APK to it - the
+    # default (contents: read, set above) is kept for the other job.
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
@@ -156,6 +161,24 @@ jobs:
       - name: Install Cordova CLI
         run: npm install -g cordova
 
+      # config.xml had a hardcoded android-versionCode (1011) - every build
+      # produced the exact same version, every time, forever. That's not
+      # what caused the "incompatible update" dialog (the applicationId
+      # collision was, fixed separately), but a static versionCode is still
+      # fragile: Android's own update rules use it, so this removes any
+      # chance of a version-comparison edge case ever biting in the future.
+      # github.run_number only ever goes up for this repo, so
+      # 1011 + run_number is guaranteed to increase on every single build,
+      # forever, with no manual bookkeeping. Must run before "Project
+      # setup" (npm run setup), since that's what reads config.xml into
+      # the generated Android project.
+      - name: Bump versionCode for this build
+        run: |
+          NEW_VERSION_CODE=$((1011 + ${{ github.run_number }}))
+          echo "Setting android-versionCode to $NEW_VERSION_CODE"
+          sed -i "s/android-versionCode=\"[0-9]*\"/android-versionCode=\"$NEW_VERSION_CODE\"/" config.xml
+          grep -o 'android-versionCode="[0-9]*"' config.xml
+
       - name: Project setup (cordova platform + plugins)
         run: npm run setup
 
@@ -218,6 +241,31 @@ jobs:
           path: ${{ steps.apk.outputs.path }}
           if-no-files-found: error
 
+      # actions/upload-artifact above always comes back as a .zip when
+      # downloaded from the Actions UI - that's GitHub's own behavior for
+      # every workflow artifact, not something this workflow controls, and
+      # there's no artifact-upload setting that turns it off. A GitHub
+      # Release's assets don't have that problem: the .apk downloads as a
+      # plain .apk, one click, same link every time. This keeps ONE rolling
+      # release ("developer-edition-latest") updated on every build instead
+      # of piling up a new release per commit.
+      - name: Publish APK to a GitHub Release (direct .apk download)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APK_PATH: ${{ steps.apk.outputs.path }}
+          GIT_COMMIT: ${{ steps.meta.outputs.git_commit }}
+        run: |
+          set -euo pipefail
+          TAG="developer-edition-latest"
+          TITLE="Código Mobile - build mais recente (${VARIANT}, ${GIT_COMMIT})"
+          NOTES="Build automático do commit ${GIT_COMMIT} (variante ${VARIANT}). Baixe o .apk abaixo diretamente - sem zip. APK de debug (não é um release assinado/oficial); veja o README para instalar."
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$APK_PATH" --clobber
+            gh release edit "$TAG" --title "$TITLE" --notes "$NOTES"
+          else
+            gh release create "$TAG" "$APK_PATH" --title "$TITLE" --notes "$NOTES" --prerelease
+          fi
+
       - name: Build summary
         if: always()
         run: |
@@ -228,6 +276,8 @@ jobs:
           echo "| Commit | ${{ steps.meta.outputs.git_commit || 'n/a' }} |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Artifact | ${{ steps.meta.outputs.artifact_name || 'build failed before packaging' }} |" >> "$GITHUB_STEP_SUMMARY"
           echo "| SHA256 | ${{ steps.apk.outputs.sha256 || 'n/a' }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Download direto (sem zip): https://github.com/${{ github.repository }}/releases/tag/developer-edition-latest" >> "$GITHUB_STEP_SUMMARY"
 
   # Signed release build: strictly opt-in and separate from the debug job
   # above, as required by section 8 of the brief ("O build de release
@@ -277,6 +327,24 @@ jobs:
 
       - name: Install Cordova CLI
         run: npm install -g cordova
+
+      # config.xml had a hardcoded android-versionCode (1011) - every build
+      # produced the exact same version, every time, forever. That's not
+      # what caused the "incompatible update" dialog (the applicationId
+      # collision was, fixed separately), but a static versionCode is still
+      # fragile: Android's own update rules use it, so this removes any
+      # chance of a version-comparison edge case ever biting in the future.
+      # github.run_number only ever goes up for this repo, so
+      # 1011 + run_number is guaranteed to increase on every single build,
+      # forever, with no manual bookkeeping. Must run before "Project
+      # setup" (npm run setup), since that's what reads config.xml into
+      # the generated Android project.
+      - name: Bump versionCode for this build
+        run: |
+          NEW_VERSION_CODE=$((1011 + ${{ github.run_number }}))
+          echo "Setting android-versionCode to $NEW_VERSION_CODE"
+          sed -i "s/android-versionCode=\"[0-9]*\"/android-versionCode=\"$NEW_VERSION_CODE\"/" config.xml
+          grep -o 'android-versionCode="[0-9]*"' config.xml
 
       - name: Project setup (cordova platform + plugins)
         run: npm run setup

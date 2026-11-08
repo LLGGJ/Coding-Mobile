@@ -615,6 +615,7 @@ function execOperation(type, action, url, $target, name) {
 
 	function setActiveProject() {
 		projectContext.setActiveProject({ url: rootUrl, name });
+		maybeAutoInstallDependencies({ url: rootUrl, name });
 		toast(
 			strings["active project set"]
 				? strings["active project set"].replace("{name}", name)

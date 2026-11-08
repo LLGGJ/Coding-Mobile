@@ -549,38 +549,41 @@ blossom.preferredTerminalTheme = "light";
 const custom = createBuiltInTheme("Custom");
 custom.autoDarkened = true;
 
-// Acode Developer Edition identity: black/graphite surfaces with blue and
-// purple accents (see section 7 of the Developer Edition brief). Built the
-// same way as every other built-in theme above, so it works everywhere a
-// theme already works instead of bolting on a parallel styling system.
+// Acode Developer Edition identity: matches Visual Studio Code's own
+// default dark theme ("Dark+") as closely as the app's theme system
+// allows - same editor/sidebar backgrounds (#1e1e1e / #252526), same
+// #007acc accent blue, same button/link/error colors - instead of an
+// original palette, since that's what was asked for. Built the same way
+// as every other built-in theme above, so it works everywhere a theme
+// already works instead of bolting on a parallel styling system.
 const developerEdition = createBuiltInTheme(
 	"Developer Edition",
 	"dark",
 	"free",
 );
-developerEdition.darkenedPrimaryColor = "rgb(10, 10, 14)";
-developerEdition.primaryColor = "rgb(16, 17, 23)";
-developerEdition.primaryTextColor = "rgb(232, 233, 240)";
-developerEdition.secondaryColor = "rgb(24, 25, 33)";
-developerEdition.secondaryTextColor = "rgb(176, 180, 196)";
-developerEdition.activeColor = "rgb(124, 92, 255)";
-developerEdition.activeIconColor = "rgb(90, 140, 255)";
-developerEdition.linkTextColor = "rgb(120, 170, 255)";
-developerEdition.borderColor = "rgba(124, 92, 255, 0.22)";
-developerEdition.popupIconColor = "rgb(232, 233, 240)";
-developerEdition.popupBackgroundColor = "rgb(18, 19, 26)";
-developerEdition.popupTextColor = "rgb(232, 233, 240)";
-developerEdition.popupActiveColor = "rgb(124, 92, 255)";
-developerEdition.popupBorderColor = "rgba(124, 92, 255, 0.25)";
-developerEdition.boxShadowColor = "rgba(0, 0, 0, 0.55)";
-developerEdition.buttonBackgroundColor = "rgb(90, 70, 220)";
+developerEdition.darkenedPrimaryColor = "rgb(24, 24, 24)";
+developerEdition.primaryColor = "rgb(30, 30, 30)";
+developerEdition.primaryTextColor = "rgb(204, 204, 204)";
+developerEdition.secondaryColor = "rgb(37, 37, 38)";
+developerEdition.secondaryTextColor = "rgb(190, 190, 190)";
+developerEdition.activeColor = "rgb(0, 122, 204)";
+developerEdition.activeIconColor = "rgb(0, 122, 204)";
+developerEdition.linkTextColor = "rgb(55, 148, 255)";
+developerEdition.borderColor = "rgba(255, 255, 255, 0.1)";
+developerEdition.popupIconColor = "rgb(204, 204, 204)";
+developerEdition.popupBackgroundColor = "rgb(37, 37, 38)";
+developerEdition.popupTextColor = "rgb(204, 204, 204)";
+developerEdition.popupActiveColor = "rgb(0, 122, 204)";
+developerEdition.popupBorderColor = "rgba(255, 255, 255, 0.12)";
+developerEdition.boxShadowColor = "rgba(0, 0, 0, 0.5)";
+developerEdition.buttonBackgroundColor = "rgb(14, 99, 156)";
 developerEdition.buttonTextColor = "rgb(255, 255, 255)";
-developerEdition.buttonActiveColor = "rgb(110, 90, 255)";
+developerEdition.buttonActiveColor = "rgb(17, 119, 187)";
 developerEdition.activeTextColor = "rgb(255, 255, 255)";
-developerEdition.errorTextColor = "rgb(255, 110, 110)";
-developerEdition.dangerColor = "rgb(230, 70, 70)";
-developerEdition.scrollbarColor = "rgba(124, 92, 255, 0.25)";
-developerEdition.preferredEditorTheme = "tokyoNight";
+developerEdition.errorTextColor = "rgb(244, 135, 113)";
+developerEdition.dangerColor = "rgb(244, 71, 71)";
+developerEdition.scrollbarColor = "rgba(121, 121, 121, 0.4)";
+developerEdition.preferredEditorTheme = "vscodeDark";
 developerEdition.preferredTerminalTheme = "dark";
 
 export default [

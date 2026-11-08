@@ -43,8 +43,6 @@ export default async function maybeAutoInstallDependencies(folder) {
 			.catch(() => false);
 		if (!hasPackageJson) return;
 
-		handledThisSession.add(folder.url);
-
 		const hasNodeModules = await fsOperation(nodeModulesUrl)
 			.exists()
 			.catch(() => false);
@@ -71,6 +69,15 @@ export default async function maybeAutoInstallDependencies(folder) {
 		});
 		if (!terminal?.component) return;
 
+		// Only mark this folder as "handled" once a terminal actually got
+		// created for it - every check above this point can bail out for a
+		// reason that might not be true anymore the next time the user
+		// opens this same folder in this same session (Alpine not
+		// installed *yet*, terminal not reachable *yet*). Marking it any
+		// earlier (e.g. right after confirming package.json exists) would
+		// have silently blocked every retry for the rest of the session.
+		handledThisSession.add(folder.url);
+
 		await new Promise((resolve, reject) => {
 			const start = Date.now();
 			const check = () => {
@@ -89,10 +96,11 @@ export default async function maybeAutoInstallDependencies(folder) {
 				"Instalando dependências do projeto (npm install)…",
 			),
 		);
-		// createTerminal already cd'd into the active project. `command -v
-		// npm` first, since a fresh Alpine sandbox doesn't ship npm
-		// pre-installed (see apk add npm in docs) - installs it once,
-		// silently, only when missing.
+		// createTerminal already cd'd into the active project. Builds of
+		// this app now ship Alpine with npm already installed, but
+		// `command -v npm || apk add npm` stays as a safety net for any
+		// APK built before that (or a rootfs that got reset) - harmless
+		// and instant when npm is already there.
 		terminal.component.write(
 			"command -v npm >/dev/null 2>&1 || apk add --no-interactive npm; npm install\n",
 		);
