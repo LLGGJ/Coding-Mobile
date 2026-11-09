@@ -260,6 +260,15 @@ jobs:
           TITLE="Código Mobile - build mais recente (${VARIANT}, ${GIT_COMMIT})"
           NOTES="Build automático do commit ${GIT_COMMIT} (variante ${VARIANT}). Baixe o .apk abaixo diretamente - sem zip. APK de debug (não é um release assinado/oficial); veja o README para instalar."
           if gh release view "$TAG" >/dev/null 2>&1; then
+            # The asset filename includes the commit hash (so a user can
+            # tell builds apart), which means --clobber never matches an
+            # older asset - they'd otherwise pile up on this release
+            # forever. Delete every existing asset first so only this
+            # build's .apk is ever attached, and the download link always
+            # points at the latest one unambiguously.
+            gh api "repos/${{ github.repository }}/releases/tags/${TAG}" --jq '.assets[].id' | while read -r asset_id; do
+              gh api -X DELETE "repos/${{ github.repository }}/releases/assets/${asset_id}"
+            done
             gh release upload "$TAG" "$APK_PATH" --clobber
             gh release edit "$TAG" --title "$TITLE" --notes "$NOTES"
           else
