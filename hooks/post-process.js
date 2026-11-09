@@ -32,6 +32,7 @@ copyDirRecursively(
   path.resolve(__dirname, '../platforms/android/app/src/main/java')
 );
 enableLegacyJni();
+enableV1Signing();
 enableStaticContext();
 disableSplashFadeOnRealmeAndroid13();
 removeLegacyKeyboardWorkaround();
@@ -124,29 +125,29 @@ function patchTargetSdkVersion() {
   const sdkRegex = /targetSdkVersion\s+(cordovaConfig\.SDK_VERSION|\d+)/;
 
   if (sdkRegex.test(content)) {
+    // api="36" (modern targetSdkVersion) is the right value for every normal
+    // build - GitHub Actions CI included. api="28" exists only for an actual
+    // F-Droid build, which opts in by writing "true" to a fdroid.bool flag
+    // file before `cordova prepare` runs.
+    //
+    // Bug (found 2026-11-09): this used to treat a *missing* flag file as
+    // "assume F-Droid, downgrade to 28" instead of "not F-Droid, keep 36".
+    // Nothing in this repo's CI workflow ever creates fdroid.bool, so every
+    // single CI build - including every Developer Edition build the user
+    // installs - was silently getting targetSdkVersion 28 (Android 9,
+    // released 2018) instead of the intended modern value. A missing flag
+    // now means "not an F-Droid build" and keeps the modern api, matching
+    // what the flag is actually for; only an explicit "true" downgrades.
     let api = "36";
     const tmp = getTmpDir();
-    if (tmp == null) {
-      console.warn("---------------------------------------------------------------------------------\n\n\n\n");
-      console.warn(`⚠️ fdroid.bool not found`);
-      console.warn("⚠️ Fdroid flavour will be built");
-      api = "28";
-      console.warn("\n\n\n\n---------------------------------------------------------------------------------");
-    } else {
-      const froidFlag = path.join(getTmpDir(), 'fdroid.bool');
-
+    if (tmp != null) {
+      const froidFlag = path.join(tmp, 'fdroid.bool');
       if (fs.existsSync(froidFlag)) {
         const fdroid = fs.readFileSync(froidFlag, 'utf-8').trim();
         if (fdroid == "true") {
           api = "28";
+          console.log('[Cordova Hook] ℹ️ fdroid.bool=true, building F-Droid flavour (targetSdkVersion 28)');
         }
-      } else {
-        console.warn("---------------------------------------------------------------------------------\n\n\n\n");
-        console.warn(`⚠️ fdroid.bool not found`);
-        console.warn("⚠️ Fdroid flavour will be built");
-        api = "28";
-        console.warn("\n\n\n\n---------------------------------------------------------------------------------");
-        //process.exit(1);
       }
     }
 
@@ -191,6 +192,59 @@ function enableLegacyJni() {
 
   fs.writeFileSync(gradleFile, content, 'utf-8');
   console.log('[Cordova Hook] ✅ Enabled legacy JNI packaging');
+}
+
+/**
+ * Forces v1 (JAR) signing on alongside v2/v3 for both the debug and release
+ * signingConfigs. Confirmed by directly inspecting a real built APK
+ * (2026-11-09, build 7c9a59b): it ships with a valid v2/v3 APK Signing
+ * Block but zero META-INF/*.RSA|DSA|EC|SF v1 signature files, i.e. AGP is
+ * defaulting to v2/v3-only for this project. v1-only installers (some
+ * Samsung/vendor-skin Android builds are known to reject APKs with no v1
+ * signature, surfacing as a generic "problem parsing the package" error)
+ * are the most plausible, best-evidenced explanation found for that error
+ * after ruling out download corruption, zip/resources.arsc corruption and
+ * a missing/malformed signing block or manifest - all checked directly
+ * against the real release asset. Keeping v2/v3 on too costs nothing and
+ * is still the strongest, fastest-verifying scheme on devices that support
+ * it; this only adds the older scheme back for broader compatibility.
+ */
+function enableV1Signing() {
+  const prefix = execSync('npm prefix').toString().trim();
+  const gradleFile = path.join(prefix, 'platforms/android/app/build.gradle');
+
+  if (!fs.existsSync(gradleFile)) {
+    console.warn('[Cordova Hook] ⚠️ build.gradle not found');
+    return;
+  }
+
+  let content = fs.readFileSync(gradleFile, 'utf-8');
+  if (content.includes('v1SigningEnabled true')) {
+    console.log('[Cordova Hook] ✅ v1 signing already enabled, skipping');
+    return;
+  }
+
+  content = content.replace(/android\s*{/, match => {
+    return (
+      match +
+      `
+    signingConfigs {
+        debug {
+            v1SigningEnabled true
+            v2SigningEnabled true
+            v3SigningEnabled true
+        }
+        release {
+            v1SigningEnabled true
+            v2SigningEnabled true
+            v3SigningEnabled true
+        }
+    }`
+    );
+  });
+
+  fs.writeFileSync(gradleFile, content, 'utf-8');
+  console.log('[Cordova Hook] ✅ Enabled v1 (JAR) signing alongside v2/v3');
 }
 
 function enableStaticContext() {
