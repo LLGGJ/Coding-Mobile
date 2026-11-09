@@ -207,7 +207,10 @@ function enableLegacyJni() {
  * a missing/malformed signing block or manifest - all checked directly
  * against the real release asset. Keeping v2/v3 on too costs nothing and
  * is still the strongest, fastest-verifying scheme on devices that support
- * it; this only adds the older scheme back for broader compatibility.
+ * it; this only adds the older scheme back for broader compatibility. v3
+ * is left alone (AGP already enables it by default here; its Groovy DSL
+ * setter also isn't exposed the same way as v1/v2 on this AGP version and
+ * explicitly setting it broke the build).
  */
 function enableV1Signing() {
   const prefix = execSync('npm prefix').toString().trim();
@@ -232,12 +235,10 @@ function enableV1Signing() {
         debug {
             v1SigningEnabled true
             v2SigningEnabled true
-            v3SigningEnabled true
         }
         release {
             v1SigningEnabled true
             v2SigningEnabled true
-            v3SigningEnabled true
         }
     }`
     );
