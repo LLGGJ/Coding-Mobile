@@ -77,7 +77,7 @@ jobs:
       # is what lets a plain `chroot` into those rootfs run their own ARM
       # apk binary transparently.
       - name: Set up QEMU (for arm32/arm64 Alpine rootfs chroot)
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
         with:
           platforms: all
 
